@@ -32,10 +32,22 @@ app.use('/uploads', express.static(uploadsPath));
 app.use('/api/auth', authRoutes);
 app.use('/api/alumni', alumniRoutes);
 
-// Base Route
-app.get('/', (req, res) => {
-  res.json({ message: 'KSB Yearbook API is running...' });
-});
+// Base Route or Serve Frontend
+if (process.env.NODE_ENV === 'production') {
+  // Serve static files from the React dist folder (one level up from server/)
+  const __dirname = path.resolve();
+  app.use(express.static(path.join(__dirname, '../dist')));
+
+  // Catch-all route to serve React's index.html for frontend routing
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '../dist', 'index.html'));
+  });
+} else {
+  // Base Route for development
+  app.get('/', (req, res) => {
+    res.json({ message: 'KSB Yearbook API is running...' });
+  });
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {
